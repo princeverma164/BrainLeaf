@@ -11,16 +11,24 @@ const BookList = ({ search = "", category = "All" }) => {
     const fetchBooks = async () => {
       try {
         const res = await axios.get(apiUrl("/api/books"));
-        setBooks(res.data);
+
+        // ✅ FIX: ensure always array
+        const safeData = Array.isArray(res.data) ? res.data : [];
+        setBooks(safeData);
+
       } catch (err) {
         console.log("Error fetching books:", err);
+        setBooks([]); // fallback
       }
     };
 
     fetchBooks();
   }, []);
 
-  const filteredBooks = books.filter((book) => {
+  // ✅ EXTRA SAFETY
+  const safeBooks = Array.isArray(books) ? books : [];
+
+  const filteredBooks = safeBooks.filter((book) => {
     const query = search.trim().toLowerCase();
 
     const title = book.title?.toLowerCase() || "";
@@ -40,6 +48,7 @@ const BookList = ({ search = "", category = "All" }) => {
     <div className="px-4 py-12 bg-gray-50 md:px-12 md:py-16">
       <h2 className="text-3xl font-bold mb-8">All Books</h2>
 
+      {/* ✅ No crash now */}
       {filteredBooks.length === 0 && (
         <p className="text-gray-500">No books found</p>
       )}
@@ -61,10 +70,12 @@ const BookList = ({ search = "", category = "All" }) => {
               {book.title}
             </h3>
 
-            <p className="text-gray-500 text-sm">{book.author}</p>
+            <p className="text-gray-500 text-sm">
+              {book.author || "Unknown Author"}
+            </p>
 
             <p className="text-green-600 font-bold mt-2">
-              ₹{book.price}
+              ₹{book.price || 0}
             </p>
           </div>
         ))}
