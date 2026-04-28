@@ -12,11 +12,20 @@ const ReadBook = () => {
 
   useEffect(() => {
     const fetchBook = async () => {
-      const res = await axios.get(
-        apiUrl(`/api/books/${id}`)
-      );
+      try {
+        const res = await axios.get(apiUrl(`/api/books/${id}`));
 
-      setFile(fileUrl(res.data.file));
+        // ✅ SAFE FILE SET
+        if (res.data && res.data.file) {
+          setFile(fileUrl(res.data.file));
+        } else {
+          setFile(null);
+        }
+
+      } catch (err) {
+        console.log("Error loading book:", err);
+        setFile(null);
+      }
     };
 
     fetchBook();
@@ -27,12 +36,17 @@ const ReadBook = () => {
 
       <h1 className="text-2xl font-bold mb-6">Reading Book 📖</h1>
 
+      {!file && (
+        <p className="text-gray-500">Loading book...</p>
+      )}
+
       {file && (
         <Document
           file={file}
           onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+          onLoadError={(error) => console.log("PDF error:", error)}
         >
-          {Array.from(new Array(numPages), (el, index) => (
+          {Array.from(new Array(numPages || 0), (_, index) => (
             <Page
               key={index}
               pageNumber={index + 1}
