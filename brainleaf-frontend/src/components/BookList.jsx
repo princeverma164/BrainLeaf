@@ -13,7 +13,7 @@ const BookList = ({ search = "", category = "All" }) => {
         const res = await axios.get(apiUrl("/api/books"));
         setBooks(res.data);
       } catch (err) {
-        console.log(err);
+        console.log("Error fetching books:", err);
       }
     };
 
@@ -22,6 +22,7 @@ const BookList = ({ search = "", category = "All" }) => {
 
   const filteredBooks = books.filter((book) => {
     const query = search.trim().toLowerCase();
+
     const title = book.title?.toLowerCase() || "";
     const author = book.author?.toLowerCase() || "";
     const bookCategory = book.category || "All";
@@ -59,8 +60,12 @@ const BookList = ({ search = "", category = "All" }) => {
             <h3 className="mt-3 font-semibold line-clamp-1">
               {book.title}
             </h3>
+
             <p className="text-gray-500 text-sm">{book.author}</p>
-            <p className="text-green-600 font-bold mt-2">₹{book.price}</p>
+
+            <p className="text-green-600 font-bold mt-2">
+              ₹{book.price}
+            </p>
           </div>
         ))}
       </div>

@@ -6,7 +6,7 @@ import Hero from "./components/Hero";
 import Categories from "./components/Categories";
 import Features from "./components/Features";
 import BookList from "./components/BookList";
-import FeedbackSection from "./components/FeedbackSection";
+import Feedback from "./components/Feedback";
 
 import BookDetail from "./pages/BookDetail";
 import MyLibrary from "./pages/MyLibrary";
@@ -40,7 +40,7 @@ function App() {
               <Hero />
               <Categories setCategory={setCategory} /> {/* 🔥 IMPORTANT */}
               <Features />
-              <FeedbackSection />
+              <Feedback />
             </>
           }
         />
