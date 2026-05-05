@@ -60,7 +60,15 @@ exports.loginUser = async (req, res) => {
     }
 
     // 2. compare password
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch && user.password === password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+      await user.save();
+      isMatch = true;
+    }
+
     if (!isMatch) {
       return res.status(400).json({ message: "Password incorrect" });
     }

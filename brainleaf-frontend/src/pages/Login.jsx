@@ -22,8 +22,8 @@ const Login = () => {
       const res = await axios.post(
         apiUrl("/api/auth/login"),
         {
-          email: form.email,
-          password: form.password,
+          email: form.email.trim().toLowerCase(),
+          password: form.password.trim(),
         }
       );
 
