@@ -20,7 +20,7 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      await axios.post(
+      const res = await axios.post(
         apiUrl("/api/auth/register"),
         {
           name: form.name.trim(),
@@ -28,6 +28,14 @@ const Register = () => {
           password: form.password.trim(),
         }
       );
+
+      if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+        window.dispatchEvent(new Event("storage"));
+        alert(res.data.message || "Registered successfully!");
+        navigate("/");
+        return;
+      }
 
       alert("Registered successfully!");
       navigate("/login");

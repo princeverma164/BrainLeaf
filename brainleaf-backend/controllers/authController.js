@@ -2,8 +2,26 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const createToken = (userId) =>
+  jwt.sign(
+    { id: userId },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
 
-// 🔐 REGISTER
+const verifyPassword = async (user, password) => {
+  let isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch && user.password === password) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    await user.save();
+    isMatch = true;
+  }
+
+  return isMatch;
+};
+
 exports.registerUser = async (req, res) => {
   try {
     const name = req.body.name?.trim();
@@ -14,17 +32,26 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "Please fill all fields" });
     }
 
-    // 1. check user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists, please login with the same password" });
+      const isMatch = await verifyPassword(userExists, password);
+
+      if (!isMatch) {
+        return res.status(400).json({
+          message: "Email already registered. Please login with the correct password",
+        });
+      }
+
+      return res.status(200).json({
+        message: "User already registered, logged in successfully",
+        token: createToken(userExists._id),
+        user: userExists,
+      });
     }
 
-    // 2. hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 3. create user
     const user = await User.create({
       name,
       email,
@@ -33,6 +60,7 @@ exports.registerUser = async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
+      token: createToken(user._id),
       user,
     });
 
@@ -41,9 +69,6 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-
-
-// 🔑 LOGIN
 exports.loginUser = async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
@@ -53,36 +78,19 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Please enter email and password" });
     }
 
-    // 1. check user exists
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Email not registered" });
     }
 
-    // 2. compare password
-    let isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch && user.password === password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-      await user.save();
-      isMatch = true;
-    }
-
+    const isMatch = await verifyPassword(user, password);
     if (!isMatch) {
       return res.status(400).json({ message: "Password incorrect" });
     }
 
-    // 3. generate token
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
     res.status(200).json({
       message: "Login successful",
-      token,
+      token: createToken(user._id),
       user,
     });
 
