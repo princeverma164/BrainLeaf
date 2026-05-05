@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
@@ -15,10 +16,10 @@ const app = express();
 // DB connect
 connectDB();
 
-// middleware
-app.use(express.json());
-app.use(cors());
-
+app.use(express.json()); // body parse करेगा
+app.use(cors({
+  origin: "*", // production में specific domain डाल सकते हो
+}));
 
 app.get("/", (req, res) => {
   res.send("Brainleaf API running 🚀"); // ✅ correct method
@@ -26,10 +27,10 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/purchase", purchaseRoutes);
 app.use("/api/reviews", reviewRoutes);
-app.use("/api/feedbacks", feedbackRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

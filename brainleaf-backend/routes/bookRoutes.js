@@ -12,7 +12,15 @@ const upload = require("../middleware/uploadMiddleware");
 const { getBookById } = require("../controllers/bookController");
 
 // upload book (protected)
-router.post("/", protect, upload.single("file"), createBook);
+router.post(
+  "/",
+  protect,
+  upload.fields([
+    { name: "file", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  createBook
+);
 
 // get books
 router.get("/", getBooks);

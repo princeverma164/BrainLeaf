@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { apiUrl, fileUrl } from "../utils/api";
 
 const MyLibrary = () => {
   const [books, setBooks] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLibrary = async () => {
@@ -34,16 +36,15 @@ const MyLibrary = () => {
       <div className="grid grid-cols-3 gap-6">
         {books.map((book) => (
           <div key={book._id} className="bg-white p-4 rounded shadow">
-            <img src={fileUrl(book.file)} className="h-40 w-full" />
+            <img
+              src={book.coverImage ? fileUrl(book.coverImage) : "/brainleaf1.png"}
+              alt={book.title}
+              className="h-40 w-full object-cover"
+            />
             <h3>{book.title}</h3>
 
             <button
-              onClick={() =>
-                window.open(
-                  apiUrl(`/api/books/${book._id}/read`),
-                  "_blank"
-                )
-              }
+              onClick={() => navigate(`/read/${book._id}`)}
               className="bg-green-600 text-white px-3 py-2 mt-2"
             >
               Read

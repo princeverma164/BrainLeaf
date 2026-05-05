@@ -1,15 +1,16 @@
 const Book = require("../models/Book");
 const path = require("path");
+const fs = require("fs");
 const Purchase = require("../models/Purchase");
-
 
 // 📚 CREATE BOOK
 exports.createBook = async (req, res) => {
   try {
     const { title, author, description, price, category } = req.body;
+    const bookFile = req.files?.file?.[0];
+    const coverFile = req.files?.coverImage?.[0];
 
-    // 🔥 validation
-    if (!title || !price || !req.file || !category) {
+    if (!title || !price || !bookFile || !category) {
       return res.status(400).json({
         message: "Title, price, category and file are required",
       });
@@ -21,7 +22,8 @@ exports.createBook = async (req, res) => {
       description,
       price,
       category,
-      file: req.file.path.replace(/\\/g, "/"),
+      file: `uploads/${bookFile.filename}`,
+      coverImage: coverFile ? `uploads/${coverFile.filename}` : "",
       uploadedBy: req.user._id,
     });
 
@@ -35,24 +37,21 @@ exports.createBook = async (req, res) => {
   }
 };
 
-
-// 📚 GET ALL BOOKS (with optional filters)
+// 📚 GET ALL BOOKS
 exports.getBooks = async (req, res) => {
   try {
     const { category, search } = req.query;
 
     let filter = {};
 
-    // 🔥 category filter
     if (category && category !== "All") {
       filter.category = category;
     }
 
-    // 🔥 search filter (title based)
     if (search) {
       filter.title = {
         $regex: search,
-        $options: "i", // case insensitive
+        $options: "i",
       };
     }
 
@@ -67,7 +66,6 @@ exports.getBooks = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 // 📖 GET SINGLE BOOK
 exports.getBookById = async (req, res) => {
@@ -85,23 +83,10 @@ exports.getBookById = async (req, res) => {
   }
 };
 
-
-// 📖 READ BOOK (secure)
+// 📖 READ BOOK (FINAL FIXED)
 exports.readBook = async (req, res) => {
   try {
     const bookId = req.params.id;
-
-    // 🔥 check purchase
-    const purchase = await Purchase.findOne({
-      user: req.user._id,
-      book: bookId,
-    });
-
-    if (!purchase) {
-      return res.status(403).json({
-        message: "You have not purchased this book",
-      });
-    }
 
     // 🔥 get book
     const book = await Book.findById(bookId);
@@ -110,12 +95,38 @@ exports.readBook = async (req, res) => {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    // 🔥 send file
-    const filePath = path.resolve(book.file);
+    const isOwner = book.uploadedBy?.toString() === req.user._id.toString();
 
+    // 🔥 check purchase
+    const purchase = await Purchase.findOne({
+      user: req.user._id,
+      book: bookId,
+    });
+
+    if (!purchase && !isOwner) {
+      return res.status(403).json({
+        message: "You have not purchased this book",
+      });
+    }
+
+    // 🔥 FINAL PATH FIX
+    const filePath = path.join(__dirname, "..", book.file);
+
+    console.log("Serving file from:", filePath);
+
+    // 🔥 FILE EXIST CHECK (VERY IMPORTANT)
+    if (!fs.existsSync(filePath)) {
+      console.log("File NOT FOUND:", filePath);
+      return res.status(404).json({
+        message: "File not found on server",
+      });
+    }
+
+    // 🔥 SEND FILE
     res.sendFile(filePath);
 
   } catch (error) {
+    console.log("ReadBook error:", error);
     res.status(500).json({ message: error.message });
   }
 };

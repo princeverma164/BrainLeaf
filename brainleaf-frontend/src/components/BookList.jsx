@@ -52,8 +52,9 @@ const BookList = ({ search = "", category = "All" }) => {
             className="bg-white p-4 rounded-xl shadow cursor-pointer"
           >
             <img
-              src={fileUrl(book.file)}
-              className="h-40 w-full object-cover rounded"
+              src={book.coverImage ? fileUrl(book.coverImage) : "/brainleaf1.png"}
+              alt={book.title}
+              className="h-40 w-full object-cover rounded bg-gray-100"
             />
 
             <h3 className="mt-3 font-semibold">{book.title}</h3>
