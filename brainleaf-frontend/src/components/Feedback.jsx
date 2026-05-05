@@ -18,7 +18,7 @@ const Feedback = () => {
 
   const fetchFeedbacks = async () => {
     try {
-     const res = await axios.get("http://localhost:5000/api/feedback");
+      const res = await axios.get(apiUrl("/api/feedback"));
       setFeedbacks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.log(err);
@@ -50,7 +50,7 @@ const Feedback = () => {
       data.append("message", form.message);
       if (form.photo) data.append("photo", form.photo);
 
-      await axios.post("http://localhost:5000/api/feedback", data);
+      await axios.post(apiUrl("/api/feedback"), data);
 
       alert("Feedback added!");
 
