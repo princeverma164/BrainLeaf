@@ -19,13 +19,26 @@ const Login = () => {
     e.preventDefault();
 
     try {
+      const email = form.email.trim().toLowerCase();
+      const password = form.password.trim();
+
+      if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+      }
+
       const res = await axios.post(
         apiUrl("/api/auth/login"),
         {
-          email: form.email.trim().toLowerCase(),
-          password: form.password.trim(),
+          email,
+          password,
         }
       );
+
+      if (!res.data?.success || !res.data?.token) {
+        alert(res.data?.message || "Login failed");
+        return;
+      }
 
       localStorage.setItem("token", res.data.token);
       window.dispatchEvent(new Event("storage"));

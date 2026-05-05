@@ -20,14 +20,28 @@ const Register = () => {
     e.preventDefault();
 
     try {
+      const name = form.name.trim();
+      const email = form.email.trim().toLowerCase();
+      const password = form.password.trim();
+
+      if (!name || !email || !password) {
+        alert("Please fill all fields");
+        return;
+      }
+
       const res = await axios.post(
         apiUrl("/api/auth/register"),
         {
-          name: form.name.trim(),
-          email: form.email.trim().toLowerCase(),
-          password: form.password.trim(),
+          name,
+          email,
+          password,
         }
       );
+
+      if (res.data?.success === false) {
+        alert(res.data?.message || "Registration failed");
+        return;
+      }
 
       if (res.data?.token) {
         localStorage.setItem("token", res.data.token);

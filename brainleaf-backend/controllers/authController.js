@@ -29,7 +29,7 @@ exports.registerUser = async (req, res) => {
     const password = req.body.password?.trim();
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please fill all fields" });
+      return res.status(200).json({ success: false, message: "Please fill all fields" });
     }
 
     const userExists = await User.findOne({ email });
@@ -37,12 +37,14 @@ exports.registerUser = async (req, res) => {
       const isMatch = await verifyPassword(userExists, password);
 
       if (!isMatch) {
-        return res.status(400).json({
+        return res.status(200).json({
+          success: false,
           message: "Email already registered. Please login with the correct password",
         });
       }
 
       return res.status(200).json({
+        success: true,
         message: "User already registered, logged in successfully",
         token: createToken(userExists._id),
         user: userExists,
@@ -59,6 +61,7 @@ exports.registerUser = async (req, res) => {
     });
 
     res.status(201).json({
+      success: true,
       message: "User registered successfully",
       token: createToken(user._id),
       user,
@@ -75,20 +78,21 @@ exports.loginUser = async (req, res) => {
     const password = req.body.password?.trim();
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Please enter email and password" });
+      return res.status(200).json({ success: false, message: "Please enter email and password" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Email not registered" });
+      return res.status(200).json({ success: false, message: "Email not registered" });
     }
 
     const isMatch = await verifyPassword(user, password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Password incorrect" });
+      return res.status(200).json({ success: false, message: "Password incorrect" });
     }
 
     res.status(200).json({
+      success: true,
       message: "Login successful",
       token: createToken(user._id),
       user,
