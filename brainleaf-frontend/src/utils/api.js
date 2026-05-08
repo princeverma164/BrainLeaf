@@ -1,8 +1,10 @@
+const PROD_API_BASE = "https://brainleaf-backend.onrender.com";
+const envApiBase = import.meta.env.VITE_API_BASE_URL;
+
 export const API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.MODE === "development"
-    ? "http://localhost:5000"
-    : "https://brainleaf-backend.onrender.com");
+  import.meta.env.MODE === "development"
+    ? envApiBase || "http://localhost:5000"
+    : PROD_API_BASE;
 
 export const apiUrl = (path) => `${API_BASE}${path}`;
 
@@ -10,3 +12,7 @@ export const fileUrl = (path = "") => {
   const normalizedPath = path.replace(/\\/g, "/");
   return `${API_BASE}/${normalizedPath}`.replace(/([^:]\/)\/+/g, "$1");
 };
+
+if (typeof window !== "undefined") {
+  window.apiUrl = apiUrl;
+}
