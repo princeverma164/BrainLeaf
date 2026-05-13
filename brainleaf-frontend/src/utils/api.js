@@ -1,10 +1,9 @@
-const PROD_API_BASE = "https://brainleaf-backend.onrender.com";
 const envApiBase = import.meta.env.VITE_API_BASE_URL;
 
 export const API_BASE =
   import.meta.env.MODE === "development"
     ? envApiBase || "http://localhost:5000"
-    : PROD_API_BASE;
+    : envApiBase || "";
 
 export const apiUrl = (path) => `${API_BASE}${path}`;
 

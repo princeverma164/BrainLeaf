@@ -3,6 +3,8 @@ services:
     build: ./brainleaf-backend
     env_file:
       - ./brainleaf-backend/.env
+    environment:
+      MONGO_URI: mongodb://mongo:27017/brainleaf
     volumes:
       - ./brainleaf-backend/uploads:/app/uploads
     depends_on:
