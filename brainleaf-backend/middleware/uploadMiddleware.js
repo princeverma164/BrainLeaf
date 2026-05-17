@@ -2,10 +2,18 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const uploadDir = path.join(__dirname, "..", "uploads");
-fs.mkdirSync(uploadDir, { recursive: true });
+const useMemoryStorage = Boolean(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+);
 
-const storage = multer.diskStorage({
+const uploadDir = path.join(__dirname, "..", "uploads");
+if (!useMemoryStorage) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
   },
@@ -16,7 +24,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({
-  storage,
+  storage: useMemoryStorage ? multer.memoryStorage() : diskStorage,
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
