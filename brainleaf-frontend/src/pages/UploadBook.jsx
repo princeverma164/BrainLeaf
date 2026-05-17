@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../utils/api";
 
 const UploadBook = () => {
-  const navigate = useNavigate();
   const [form, setForm] = useState({
     title: "",
     author: "",
@@ -67,8 +65,6 @@ const UploadBook = () => {
         file: null,
         coverImage: null,
       });
-
-      navigate("/books");
 
     } catch (err) {
       console.log(err);

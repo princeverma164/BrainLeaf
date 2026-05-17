@@ -17,22 +17,6 @@ const ReadBook = () => {
   const [numPages, setNumPages] = useState(0);
   const [error, setError] = useState("");
 
-  const getBlobErrorMessage = async (err) => {
-    const data = err.response?.data;
-
-    if (data instanceof Blob) {
-      try {
-        const text = await data.text();
-        const parsed = JSON.parse(text);
-        return parsed.message || "Failed to load PDF file";
-      } catch {
-        return "Failed to load PDF file";
-      }
-    }
-
-    return err.response?.data?.message || "Failed to load PDF file";
-  };
-
   useEffect(() => {
     let objectUrl = null;
 
@@ -55,7 +39,7 @@ const ReadBook = () => {
         setError("");
       } catch (err) {
         console.log("PDF load error:", err);
-        setError(await getBlobErrorMessage(err));
+        setError(err.response?.data?.message || "Failed to load PDF file");
       }
     };
 

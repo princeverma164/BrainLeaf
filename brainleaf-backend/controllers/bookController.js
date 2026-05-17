@@ -10,15 +10,6 @@ const isCloudinaryConfigured = Boolean(
     process.env.CLOUDINARY_API_KEY &&
     process.env.CLOUDINARY_API_SECRET
 );
-const isCloudRuntime = Boolean(
-  process.env.NODE_ENV === "production" ||
-    process.env.RENDER ||
-    process.env.VERCEL ||
-    process.env.RAILWAY_ENVIRONMENT ||
-    process.env.K_SERVICE
-);
-const allowLocalUploads = process.env.ALLOW_LOCAL_UPLOADS === "true";
-
 if (isCloudinaryConfigured) {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -55,13 +46,6 @@ exports.createBook = async (req, res) => {
     if (!title || !price || !bookFile || !category) {
       return res.status(400).json({
         message: "Title, price, category and file are required",
-      });
-    }
-
-    if (isCloudRuntime && !isCloudinaryConfigured && !allowLocalUploads) {
-      return res.status(500).json({
-        message:
-          "Cloud storage is not configured. Add Cloudinary environment variables before uploading books in production.",
       });
     }
 
@@ -121,9 +105,10 @@ exports.getBooks = async (req, res) => {
       };
     }
 
-    const books = await Book.find(filter)
-      .sort({ createdAt: -1 })
-      .populate("uploadedBy", "name email");
+    const books = await Book.find(filter).populate(
+      "uploadedBy",
+      "name email"
+    );
 
     res.json(books);
 
