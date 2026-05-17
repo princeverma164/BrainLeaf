@@ -10,7 +10,13 @@ const isCloudinaryConfigured = Boolean(
     process.env.CLOUDINARY_API_KEY &&
     process.env.CLOUDINARY_API_SECRET
 );
-const isProduction = process.env.NODE_ENV === "production";
+const isCloudRuntime = Boolean(
+  process.env.NODE_ENV === "production" ||
+    process.env.RENDER ||
+    process.env.VERCEL ||
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.K_SERVICE
+);
 const allowLocalUploads = process.env.ALLOW_LOCAL_UPLOADS === "true";
 
 if (isCloudinaryConfigured) {
@@ -52,7 +58,7 @@ exports.createBook = async (req, res) => {
       });
     }
 
-    if (isProduction && !isCloudinaryConfigured && !allowLocalUploads) {
+    if (isCloudRuntime && !isCloudinaryConfigured && !allowLocalUploads) {
       return res.status(500).json({
         message:
           "Cloud storage is not configured. Add Cloudinary environment variables before uploading books in production.",
